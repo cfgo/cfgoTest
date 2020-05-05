@@ -4,8 +4,8 @@ on: [push]
 
 jobs:
   ubuntu:
-    runs-on: ubuntu-latest
-    container: cfgo/cfgoTest
+    runs-on: ubuntu-18.04
+    container: cfgo/gh-actions:cfgoTest
     
     strategy:
       fail-fast: false
