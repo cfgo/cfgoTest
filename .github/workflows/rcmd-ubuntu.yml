@@ -1,4 +1,4 @@
-name: rcmd-ubuntu
+name: R-CMD-Ubuntu
 
 on:
   pull_request:
