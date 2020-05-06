@@ -8,7 +8,7 @@ on:
 jobs:
   ubuntu:
     runs-on: ubuntu-18.04
-    container: cfgo/gh-actions:basic
+    container: cfgo/gh-actions:base
     
     strategy:
       fail-fast: false
