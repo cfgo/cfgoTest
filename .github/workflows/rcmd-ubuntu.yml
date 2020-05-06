@@ -1,4 +1,4 @@
-name: Docker
+name: rcmd-ubuntu
 
 on:
   pull_request:
@@ -8,13 +8,25 @@ on:
 jobs:
   ubuntu:
     runs-on: ubuntu-18.04
-    container: cfgo/gh-actions:cfgoTest
+    container: cfgo/gh-actions:rcmd-ubuntu
     
     strategy:
       fail-fast: false
 
     steps:
       - uses: actions/checkout@v2
+      
+      - name: Query dependencies
+        run: |
+          install.packages('remotes')
+          saveRDS(remotes::dev_package_deps(dependencies = TRUE), "depends.Rds", version = 2)
+        shell: Rscript {0}
+
+      - name: Install dependencies
+        run: |
+          remotes::install_deps(dependencies = TRUE)
+          remotes::install_cran("rcmdcheck")
+        shell: Rscript {0}
 
       - name: Check
         run: Rscript -e 'rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "warning", check_dir = "check")'
