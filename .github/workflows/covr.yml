@@ -26,7 +26,7 @@ jobs:
           remotes::install_cran("DT")
         shell: Rscript {0}
 
-      - name: Unit test coverage
+      - name: Unit-test coverage
         run: |
           tests <- covr::package_coverage(type = "tests")
           tests_list <- covr::coverage_to_list(tests)
@@ -62,11 +62,10 @@ jobs:
         
       - name: Print paths
         run: |-
-          echo "::set-env name=DEPLOY_PATH_TESTS::$(Rscript -e "cat(path_tests)")"
-          echo "::set-env name=DEPLOY_PATH_EXAMPLES::$(Rscript -e "cat(path_examples)")"
-          
+          echo "::set-env name=DEPLOY_PATH::$(Rscript -e "cat(tempdir())")"
+
       - name: Upload files
         uses: actions/upload-artifact@master
         with:
           name: Coverage Reports
-          path: ${{ env.DEPLOY_PATH_TESTS }}
+          path: ${{ env.DEPLOY_PATH }}
