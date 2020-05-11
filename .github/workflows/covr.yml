@@ -30,13 +30,16 @@ jobs:
         run: |
           tests <- covr::package_coverage(type = "tests")
           tests_list <- covr::coverage_to_list(tests)
-          message("Total Coverage: ", tests_list$totalcoverage, "%")
+          warning("Total Coverage: ", tests_list$totalcoverage, "%")
           
           tests_df <- as.data.frame(tests_list$filecoverage)
           for(i in 1:nrow(tests_df)) {
-            message(row.names(tests_df)[i], ": ", tests_df[i,], "%")
+            warning(row.names(tests_df)[i], ": ", tests_df[i,], "%")
           }
-
+          
+          path_tests <- file.path(tempdir(), "covr-tests-report.html")
+          covr::report(x = tests, file = path_tests, browse = FALSE)
+          
           if (covr::coverage_to_list(tests)$totalcoverage < 100) {
             stop("Code Coverage not 100%")
           }
@@ -46,11 +49,24 @@ jobs:
         run: |
           examples <- covr::package_coverage(type = c("examples"))
           examples_list <- covr::coverage_to_list(examples)
-          message("Total Coverage: ", examples_list$totalcoverage, "%")
+          warning("Total Coverage: ", examples_list$totalcoverage, "%")
           
           examples_df <- as.data.frame(examples_list$filecoverage)
           for(i in 1:nrow(examples_df)) {
-            message(row.names(examples_df)[i], ": ", examples_df[i,], "%")
+            warning(row.names(examples_df)[i], ": ", examples_df[i,], "%")
           }
+          
+          path_examples <- file.path(tempdir(), "covr-examples-report.html")
+          covr::report(x = examples, file = path_examples, browse = FALSE)
         shell: Rscript {0}
         
+      - name: Print paths
+        run: |-
+          echo "::set-env name=DEPLOY_PATH_TESTS::$(Rscript -e "cat(path_tests)")"
+          echo "::set-env name=DEPLOY_PATH_EXAMPLES::$(Rscript -e "cat(path_examples)")"
+          
+      - name: Upload files
+        uses: actions/upload-artifact@master
+        with:
+          name: Coverage Reports
+          path: ${{ env.DEPLOY_PATH_TESTS }}
