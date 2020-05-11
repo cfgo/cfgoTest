@@ -33,10 +33,7 @@ jobs:
           Sys.setenv(ENV_PATH_TESTS=path_tests)
           Sys.getenv('ENV_PATH_TESTS')
           covr::report(x = tests, file = path_tests, browse = FALSE)
-          
-          if (covr::coverage_to_list(tests)$totalcoverage < 100) {
-            stop("Code Coverage not 100%")
-          }
+          if (covr::coverage_to_list(tests)$totalcoverage < 100) stop("Code Coverage not 100%")
         shell: Rscript {0}
         
       - name: Example coverage
@@ -44,7 +41,6 @@ jobs:
           examples <- covr::package_coverage(type = c("examples"))
           path_examples <- file.path(tempdir(), "covr-examples-report.html")
           Sys.setenv(ENV_PATH_EXAMPLES=path_examples)
-          Sys.getenv(ENV_PATH_EXAMPLES)
           covr::report(x = examples, file = path_examples, browse = FALSE)
         shell: Rscript {0}
         
