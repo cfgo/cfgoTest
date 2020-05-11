@@ -23,6 +23,7 @@ jobs:
           remotes::install_deps(dependencies = TRUE)
           remotes::install_cran("covr")
           remotes::install_cran("htmltools")
+          remotes::install_cran("DT")
         shell: Rscript {0}
 
       - name: Unit test coverage
