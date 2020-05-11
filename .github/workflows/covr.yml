@@ -30,9 +30,7 @@ jobs:
         id: path
         run: |-
           Rscript -e 'tests <- covr::package_coverage(type = "tests")
-            path_tests <- file.path(tempdir(), "covr-tests-report.html")
-            Sys.setenv(ENV_PATH_TESTS=path_tests)
-            Sys.getenv("ENV_PATH_TESTS")
+            path_tests <- file.path("covr-tests-report.html")
             covr::report(x = tests, file = path_tests, browse = FALSE)
             if (covr::coverage_to_list(tests)$totalcoverage < 100) stop("Code Coverage not 100%")'
           
@@ -51,4 +49,4 @@ jobs:
         uses: actions/upload-artifact@master
         with:
           name: Coverage Reports
-          path: ${{ env.DEPLOY_PATH }}
+          path: covr-tests-report.html
