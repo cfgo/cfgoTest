@@ -18,6 +18,13 @@ jobs:
           saveRDS(remotes::dev_package_deps(dependencies = TRUE), "depends.Rds", version = 2)
         shell: Rscript {0}
 
+      - name: Cache R packages
+        uses: actions/cache@v1
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: ubuntu-r-3.6-1-${{ hashFiles('.github/depends.Rds') }}
+          restore-keys: ubuntu-r-3.6-1-
+          
       - name: Install dependencies
         run: |
           remotes::install_deps(dependencies = TRUE)
@@ -29,7 +36,14 @@ jobs:
       - name: Unit test coverage
         run: |
           tests <- covr::package_coverage(type = "tests")
-          tests
+          tests_list <- covr::coverage_to_list(tests)
+          message("Total Coverage: ", tests_list$totalcoverage, "%")
+          
+          tests_df <- as.data.frame(tests_list$filecoverage)
+          for(i in 1:nrow(tests_df)) {
+            message(row.names(tests_df)[i], ": ", tests_df[i,], "%")
+          }
+
           if (covr::coverage_to_list(tests)$totalcoverage < 100) {
             stop("Code Coverage not 100%")
           }
@@ -38,9 +52,12 @@ jobs:
       - name: Example coverage
         run: |
           examples <- covr::package_coverage(type = c("examples"))
-          examples
+          examples_list <- covr::coverage_to_list(examples)
+          message("Total Coverage: ", examples_list$totalcoverage, "%")
+          
+          examples_df <- as.data.frame(examples_list$filecoverage)
+          for(i in 1:nrow(examples_df)) {
+            message(row.names(examples_df)[i], ": ", examples_df[i,], "%")
+          }
         shell: Rscript {0}
         
-      - name: Report
-        run: covr::report()
-        shell: Rscript {0}
