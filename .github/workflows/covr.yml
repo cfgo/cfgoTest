@@ -8,7 +8,7 @@ on:
 jobs:
   covr:
     runs-on: ubuntu-18.04
-    container: cfgo/gh-actions:base
+    container: cfgo/gh-actions:covr
     
     steps:
       - uses: actions/checkout@v2
@@ -21,9 +21,6 @@ jobs:
       - name: Install dependencies
         run: |
           remotes::install_deps(dependencies = TRUE)
-          remotes::install_cran("covr")
-          remotes::install_cran("htmltools")
-          remotes::install_cran("DT")
         shell: Rscript {0}
 
       - name: Unit-test coverage
@@ -48,7 +45,7 @@ jobs:
         
       - name: Print paths
         run: |-
-          echo "::set-env name=DEPLOY_PATH::$(Rscript -e "cat(file.path(tempdir(), "covr-tests-report.html"))")"
+          echo "::set-env name=DEPLOY_PATH::$(Rscript -e "cat(file.path(tempdir(), 'covr-tests-report.html'))")"
 
       - name: Upload files
         uses: actions/upload-artifact@master
