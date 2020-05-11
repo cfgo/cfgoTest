@@ -1,0 +1,38 @@
+name: covr
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  lint:
+    runs-on: ubuntu-18.04
+    container: cfgo/gh-actions:base
+    
+    steps:
+      - uses: actions/checkout@v2
+    
+      - name: Query dependencies
+        run: |
+          saveRDS(remotes::dev_package_deps(dependencies = TRUE), "depends.Rds", version = 2)
+        shell: Rscript {0}
+
+      - name: Install dependencies
+        run: |
+          remotes::install_deps(dependencies = TRUE)
+          remotes::install_cran("covr")
+        shell: Rscript {0}
+
+      - name: Coverage
+        run: |
+          x <- covr::package_coverage(type = "all")
+          if (covr::coverage_to_list(x)$totalcoverage < 100) {
+            message("Code Coverage not 100%")
+            stop()
+          }
+        shell: Rscript {0}
+        
+      - name: Report
+        run: covr::report()
+        shell: Rscript {0}
