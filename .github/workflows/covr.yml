@@ -30,6 +30,7 @@ jobs:
         run: |
           tests <- covr::package_coverage(type = "tests")
           path_tests <- file.path(tempdir(), "covr-tests-report.html")
+          path_tests
           covr::report(x = tests, file = path_tests, browse = FALSE)
           
           if (covr::coverage_to_list(tests)$totalcoverage < 100) {
@@ -41,12 +42,13 @@ jobs:
         run: |
           examples <- covr::package_coverage(type = c("examples"))
           path_examples <- file.path(tempdir(), "covr-examples-report.html")
+          path_examples
           covr::report(x = examples, file = path_examples, browse = FALSE)
         shell: Rscript {0}
         
       - name: Print paths
         run: |-
-          echo "::set-env name=DEPLOY_PATH::$(Rscript -e "cat(file.path(tempdir()))")"
+          echo "::set-env name=DEPLOY_PATH::$(Rscript -e "cat(file.path(tempdir(), "covr-tests-report.html"))")"
 
       - name: Upload files
         uses: actions/upload-artifact@master
