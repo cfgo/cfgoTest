@@ -1,4 +1,4 @@
-name: covr
+name: Code Coverage
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
       - master
 
 jobs:
-  lint:
+  covr:
     runs-on: ubuntu-18.04
     container: cfgo/gh-actions:base
     
@@ -22,15 +22,22 @@ jobs:
         run: |
           remotes::install_deps(dependencies = TRUE)
           remotes::install_cran("covr")
+          remotes::install_cran("htmltools")
         shell: Rscript {0}
 
-      - name: Coverage
+      - name: Unit test coverage
         run: |
-          x <- covr::package_coverage(type = "all")
-          if (covr::coverage_to_list(x)$totalcoverage < 100) {
-            message("Code Coverage not 100%")
-            stop()
+          tests <- covr::package_coverage(type = "tests")
+          tests
+          if (covr::coverage_to_list(tests)$totalcoverage < 100) {
+            stop("Code Coverage not 100%")
           }
+        shell: Rscript {0}
+        
+      - name: Example coverage
+        run: |
+          examples <- covr::package_coverage(type = c("examples"))
+          examples
         shell: Rscript {0}
         
       - name: Report
