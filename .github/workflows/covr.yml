@@ -27,25 +27,33 @@ jobs:
         shell: Rscript {0}
 
       - name: Unit-test coverage
-        run: |-
-          Rscript -e '
-            tests <- covr::package_coverage(type = "tests")
-            path_tests <- file.path(tempdir(), "covr-tests-report.html")
-            path_tests
-            covr::report(x = tests, file = path_tests, browse = FALSE)
-            if (covr::coverage_to_list(tests)$totalcoverage < 100) stop("Code Coverage not 100%")'
-          echo "::set-env name=DEPLOY_PATH_TESTS::$(Rscript -e "cat(path_tests)")"
-
-      - name: Example coverage
-        run: |-
-          Rscript -e 'examples <- covr::package_coverage(type = c("examples"))'
-          Rscript -e 'path_examples <- file.path(tempdir(), "covr-examples-report.html")'
-          Rscript -e 'path_examples'
-          Rscript -e 'covr::report(x = examples, file = path_examples, browse = FALSE)'
-          echo "::set-env name=DEPLOY_PATH_EXAMPLES::$(Rscript -e "cat(path_examples)")"
+        run: |
+          tests <- covr::package_coverage(type = "tests")
+          path_tests <- file.path(tempdir(), "covr-tests-report.html")
+          Sys.setenv(ENV_PATH_TESTS=path_tests)
+          Sys.getenv(ENV_PATH_TESTS)
+          covr::report(x = tests, file = path_tests, browse = FALSE)
+          
+          if (covr::coverage_to_list(tests)$totalcoverage < 100) {
+            stop("Code Coverage not 100%")
+          }
+        shell: Rscript {0}
         
+      - name: Example coverage
+        run: |
+          examples <- covr::package_coverage(type = c("examples"))
+          path_examples <- file.path(tempdir(), "covr-examples-report.html")
+          Sys.setenv(ENV_PATH_EXAMPLES=path_examples)
+          Sys.getenv(ENV_PATH_EXAMPLES)
+          covr::report(x = examples, file = path_examples, browse = FALSE)
+        shell: Rscript {0}
+        
+      - name: Print paths
+        run: |-
+          echo "::set-env name=DEPLOY_PATH::$(Rscript -e "cat(Sys.getenv(ENV_PATH_TESTS))")"
+
       - name: Upload files
         uses: actions/upload-artifact@master
         with:
           name: Coverage Reports
-          path: ${{ env.DEPLOY_PATH_TESTS }}
+          path: ${{ env.DEPLOY_PATH }}
