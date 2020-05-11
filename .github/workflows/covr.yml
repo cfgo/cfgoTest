@@ -27,15 +27,16 @@ jobs:
         shell: Rscript {0}
 
       - name: Unit-test coverage
-        run: |
-          tests <- covr::package_coverage(type = "tests")
-          path_tests <- file.path(tempdir(), "covr-tests-report.html")
-          Sys.setenv(ENV_PATH_TESTS=path_tests)
-          Sys.getenv('ENV_PATH_TESTS')
-          covr::report(x = tests, file = path_tests, browse = FALSE)
-          if (covr::coverage_to_list(tests)$totalcoverage < 100) stop("Code Coverage not 100%")
-        shell: Rscript {0}
-        
+        run: |-
+          Rscript -e
+            'tests <- covr::package_coverage(type = "tests")
+            path_tests <- file.path(tempdir(), "covr-tests-report.html")
+            Sys.setenv(ENV_PATH_TESTS=path_tests)
+            Sys.getenv("ENV_PATH_TESTS")
+            covr::report(x = tests, file = path_tests, browse = FALSE)
+            if (covr::coverage_to_list(tests)$totalcoverage < 100) stop("Code Coverage not 100%")'
+          echo "::set-env name=DEPLOY_PATH::$(Rscript -e "cat(Sys.getenv('ENV_PATH_TESTS'))")"
+
       - name: Example coverage
         run: |
           examples <- covr::package_coverage(type = c("examples"))
@@ -44,10 +45,6 @@ jobs:
           covr::report(x = examples, file = path_examples, browse = FALSE)
         shell: Rscript {0}
         
-      - name: Print paths
-        run: |-
-          echo "::set-env name=DEPLOY_PATH::$(Rscript -e "cat(Sys.getenv('ENV_PATH_TESTS'))")"
-
       - name: Upload files
         uses: actions/upload-artifact@master
         with:
