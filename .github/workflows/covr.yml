@@ -28,8 +28,7 @@ jobs:
 
       - name: Unit-test coverage
         run: |-
-          Rscript -e
-            'tests <- covr::package_coverage(type = "tests")
+          Rscript -e 'tests <- covr::package_coverage(type = "tests")
             path_tests <- file.path(tempdir(), "covr-tests-report.html")
             Sys.setenv(ENV_PATH_TESTS=path_tests)
             Sys.getenv("ENV_PATH_TESTS")
