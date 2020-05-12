@@ -8,7 +8,7 @@ on:
 jobs:
   covr:
     runs-on: ubuntu-18.04
-    container: cfgo/gh-actions:base
+    container: cfgo/gh-actions:covr
     
     steps:
       - uses: actions/checkout@v2
@@ -21,27 +21,22 @@ jobs:
       - name: Install dependencies
         run: |
           remotes::install_deps(dependencies = TRUE)
-          remotes::install_cran("covr")
-          remotes::install_cran("htmltools")
-          remotes::install_cran("DT")
         shell: Rscript {0}
 
       - name: Unit-test coverage
         id: path
-        run: |-
-          Rscript -e 'tests <- covr::package_coverage(type = "tests")
-            path_tests <- file.path("covr-tests-report.html")
-            covr::report(x = tests, file = path_tests, browse = FALSE)
-            if (covr::coverage_to_list(tests)$totalcoverage < 100) stop("Code Coverage not 100%")'
+        run: |
+          tests <- covr::package_coverage(type = "tests")
+          path_tests <- file.path("test-reports", "covr-tests.html")
+          covr::report(x = tests, file = path_tests, browse = FALSE)
           
-          echo "::set-output name=path::$(Rscript -e "path <- file.path(tempdir(), 'report.html'); path; covr::report(covr::package_coverage(type = 'tests'), file = path, browse = FALSE); cat(path)")"
-          echo "::set-env name=DEPLOY_PATH::$(Rscript -e "path <- file.path(tempdir(), 'report.html'); path; covr::report(covr::package_coverage(type = 'tests'), file = path, browse = FALSE); cat(path)")"
-
+          if (covr::coverage_to_list(tests)$totalcoverage < 100) stop("Code Coverage not 100%")
+        shell: Rscript {0}
+          
       - name: Example coverage
         run: |
           examples <- covr::package_coverage(type = c("examples"))
-          path_examples <- file.path(tempdir(), "covr-examples-report.html")
-          Sys.setenv(ENV_PATH_EXAMPLES=path_examples)
+          path_examples <- file.path("test-reports", "covr-examples.html")
           covr::report(x = examples, file = path_examples, browse = FALSE)
         shell: Rscript {0}
         
@@ -49,4 +44,4 @@ jobs:
         uses: actions/upload-artifact@master
         with:
           name: Coverage Reports
-          path: covr-tests-report.html
+          path: test-reports
